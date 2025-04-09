@@ -4,6 +4,7 @@ from sqlalchemy import Column, Date, DateTime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession
+from rich.progress import Progress
 
 engine = create_engine('postgresql+psycopg2://apitick:GMCAPITICK001@www.purplerosechen.com:54329/apitick'
                        ,pool_size=10
@@ -72,54 +73,58 @@ session = Session()
 
 def save_stock_gsrl_gsdt(stock_gsrl_gsdt):
     try:
-        exists_record = session.query(StockGsrlGsdt).filter(
-            StockGsrlGsdt.stock_code == stock_gsrl_gsdt.stock_code,
-            StockGsrlGsdt.num == stock_gsrl_gsdt.num,
-            StockGsrlGsdt.msg_date == stock_gsrl_gsdt.msg_date
-        ).first()
-        if exists_record:
-            # 如果记录已存在，则更新数据
-            exists_record.msg = stock_gsrl_gsdt.msg
-            exists_record.msg_type = stock_gsrl_gsdt.msg_type
-            exists_record.create_time = stock_gsrl_gsdt.create_time
-        else:
-            session.add(stock_gsrl_gsdt)
+        for index, rows in stock_gsrl_gsdt.iterrows() :
+            exists_record = session.query(StockGsrlGsdt).filter(
+                StockGsrlGsdt.stock_code == rows.stock_code,
+                StockGsrlGsdt.num == rows.num,
+                StockGsrlGsdt.msg_date == rows.msg_date
+            ).first()
+            if exists_record:
+                # 如果记录已存在，则更新数据
+                exists_record.msg = rows.msg
+                exists_record.msg_type = rows.msg_type
+                exists_record.create_time = rows.create_time
+            else:
+                session.add(rows)
 
         session.commit()
     finally:
         session.close()
 
 
-def save_stock_zh_a_spot(stock_zh_a_spot):
+def save_stock_zh_a_spot(stock_zh_a_spot : list):
     try:
-        exists_record = session.query(StockZhASpot).filter(
-            StockZhASpot.stock_code == stock_zh_a_spot.stock_code
-        ).first()
-        if exists_record :
-            exists_record.new_price = stock_zh_a_spot.new_price
-            exists_record.rise_and_fall = stock_zh_a_spot.rise_and_fall
-            exists_record.increase_and_decrease = stock_zh_a_spot.increase_and_decrease
-            exists_record.trading_volume = stock_zh_a_spot.trading_volume
-            exists_record.turnover = stock_zh_a_spot.turnover
-            exists_record.amplitude = stock_zh_a_spot.amplitude
-            exists_record.max_price = stock_zh_a_spot.max_price
-            exists_record.min_price = stock_zh_a_spot.min_price
-            exists_record.open_price = stock_zh_a_spot.open_price
-            exists_record.close_price = stock_zh_a_spot.close_price
-            exists_record.turnover_rate = stock_zh_a_spot.turnover_rate
-            exists_record.price_earnings_ratio = stock_zh_a_spot.price_earnings_ratio
-            exists_record.B_ratio = stock_zh_a_spot.B_ratio
-            exists_record.total_market_value = stock_zh_a_spot.total_market_value
-            exists_record.the_market_capitalization = stock_zh_a_spot.the_market_capitalization
-            exists_record.rate_of_increase = stock_zh_a_spot.rate_of_increase
-            exists_record.Five_minutes_price = stock_zh_a_spot.Five_minutes_price
-            exists_record.six_day_price = stock_zh_a_spot.six_day_price
-            exists_record.year_increase_decrease = stock_zh_a_spot.year_increase_decrease
-            exists_record.update_time = stock_zh_a_spot.update_time
-            # 如果记录已存在，则更新数据
-        else:
-            session.add(stock_zh_a_spot)
-        
-        session.commit()
+        with Progress() as progress:
+            task = progress.add_task(description="[cyan]UpdateDb...", total=stock_zh_a_spot.__len__())
+            for rows in stock_zh_a_spot :
+                progress.update(task, advance=1)
+                exists_record = session.query(StockZhASpot).filter(
+                    StockZhASpot.stock_code == rows.stock_code
+                ).first()
+                if exists_record :
+                    exists_record.new_price = rows.new_price
+                    exists_record.rise_and_fall = rows.rise_and_fall
+                    exists_record.increase_and_decrease = rows.increase_and_decrease
+                    exists_record.trading_volume = rows.trading_volume
+                    exists_record.turnover = rows.turnover
+                    exists_record.amplitude = rows.amplitude
+                    exists_record.max_price = rows.max_price
+                    exists_record.min_price = rows.min_price
+                    exists_record.open_price = rows.open_price
+                    exists_record.close_price = rows.close_price
+                    exists_record.turnover_rate = rows.turnover_rate
+                    exists_record.price_earnings_ratio = rows.price_earnings_ratio
+                    exists_record.B_ratio = rows.B_ratio
+                    exists_record.total_market_value = rows.total_market_value
+                    exists_record.the_market_capitalization = rows.the_market_capitalization
+                    exists_record.rate_of_increase = rows.rate_of_increase
+                    exists_record.Five_minutes_price = rows.Five_minutes_price
+                    exists_record.six_day_price = rows.six_day_price
+                    exists_record.year_increase_decrease = rows.year_increase_decrease
+                    exists_record.update_time = rows.update_time
+                    # 如果记录已存在，则更新数据
+                else:
+                    session.add(rows)
+            session.commit()
     finally:
         session.close()

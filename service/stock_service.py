@@ -39,22 +39,20 @@ def task_stock_gsrl_gsdt():
                 stock_gsrl_gsdt_em_df = ak.stock_gsrl_gsdt_em(date=date_str)
                 if not stock_gsrl_gsdt_em_df.emmpty:
                     # 处理数据
+                    dbdataList = []
                     for index, row in stock_gsrl_gsdt_em_df.iterrows():
-                        if index == 0:
-                            # 跳过第一行数据
-                            continue
-                        row_data = row.tolist()
                         stock_gsrl_gsdt = StockGsrlGsdt()
-                        stock_gsrl_gsdt.num = row_data[0]
-                        stock_gsrl_gsdt.stock_code = row_data[1]
-                        stock_gsrl_gsdt.stock_name = row_data[2]
-                        stock_gsrl_gsdt.msg_type = row_data[3]
-                        stock_gsrl_gsdt.msg = row_data[4]
+                        stock_gsrl_gsdt.num = row["序号"]
+                        stock_gsrl_gsdt.stock_code = row["代码"]
+                        stock_gsrl_gsdt.stock_name = row["简称"]
+                        stock_gsrl_gsdt.msg_type = row["事件类型"]
+                        stock_gsrl_gsdt.msg = row["具体事项"]
                         # 2023-08-08时间格式转换为日期对象
-                        stock_gsrl_gsdt.msg_date = row_data[5]
+                        stock_gsrl_gsdt.msg_date = row["交易日"]
                         stock_gsrl_gsdt.create_time = datetime.now()
                         # 保存数据到数据库
-                        save_stock_gsrl_gsdt(stock_gsrl_gsdt)
+                        dbdataList.append(stock_gsrl_gsdt)
+                    save_stock_gsrl_gsdt(dbdataList)
             except Exception as e:
                 # 异常处理，打印堆栈信息
                 print("处理数据时发生异常：")
@@ -71,42 +69,39 @@ def task_stock_zh_a_spot():
         print("正在处理数据")
         if not stock_zh_a_spot_em_df.empty:
             rowsize, columns = stock_zh_a_spot_em_df.shape
-            print(f"数据:{rowsize}")
+            print(f"获取到数据:{rowsize}")
+            data_list = [StockZhASpot]  # Initialize an empty list to store processed data
             with Progress() as progress:
                 task = progress.add_task(description="[cyan]Downloading...", total=rowsize)
                 for index, rows in stock_zh_a_spot_em_df.iterrows() :
-                    progress.update(task, advance=1)
-                    if index == 0:
-                        # 跳过第一行数据
-                        continue
-                    
-                    row_data = rows.tolist()
                     stockZhASpot = StockZhASpot()
-                    stockZhASpot.stock_code = row_data[1]
-                    stockZhASpot.stock_name = row_data[2]
-                    stockZhASpot.new_price = row_data[3]
-                    stockZhASpot.rise_and_fall = row_data[4]
-                    stockZhASpot.increase_and_decrease = row_data[5]
-                    stockZhASpot.trading_volume = row_data[6]
-                    stockZhASpot.turnover = row_data[7]
-                    stockZhASpot.amplitude = row_data[8]
-                    stockZhASpot.max_price = row_data[9]
-                    stockZhASpot.min_price = row_data[10]
-                    stockZhASpot.open_price = row_data[11]
-                    stockZhASpot.close_price = row_data[12]
-                    stockZhASpot.turnover_rate = row_data[13]
-                    stockZhASpot.price_earnings_ratio = row_data[14]
-                    stockZhASpot.B_ratio = row_data[15]
-                    stockZhASpot.total_market_value = row_data[16]
-                    stockZhASpot.the_market_capitalization = row_data[17]
-                    stockZhASpot.rate_of_increase = row_data[18]
-                    stockZhASpot.Five_minutes_price = row_data[19]
-                    stockZhASpot.six_day_price = row_data[20]
-                    stockZhASpot.year_increase_decrease = row_data[21]
+                    stockZhASpot.stock_code = rows["代码"]
+                    stockZhASpot.stock_name = rows["名称"]
+                    stockZhASpot.new_price = rows["最新价"]
+                    stockZhASpot.rise_and_fall = rows["涨跌幅"]
+                    stockZhASpot.increase_and_decrease = rows["涨跌额"]
+                    stockZhASpot.trading_volume = rows["成交量"]
+                    stockZhASpot.turnover = rows["成交额"]
+                    stockZhASpot.amplitude = rows["振幅"]
+                    stockZhASpot.max_price = rows["最高"]
+                    stockZhASpot.min_price = rows["最低"]
+                    stockZhASpot.open_price = rows["今开"]
+                    stockZhASpot.close_price = rows["昨收"]
+                    stockZhASpot.turnover_rate = rows["量比"]
+                    stockZhASpot.price_earnings_ratio = rows["换手率"]
+                    stockZhASpot.B_ratio = rows["市净率"]
+                    stockZhASpot.total_market_value = rows["总市值"]
+                    stockZhASpot.the_market_capitalization = rows["流通市值"]
+                    stockZhASpot.rate_of_increase = rows["涨速"]
+                    stockZhASpot.Five_minutes_price = rows["5分钟涨跌"]
+                    stockZhASpot.six_day_price = rows["60日涨跌幅"]
+                    stockZhASpot.year_increase_decrease = rows["年初至今涨跌幅"]
                     stockZhASpot.create_time = datetime.now()
                     stockZhASpot.update_time = datetime.now()
                     # 保存数据到数据库
-                    save_stock_zh_a_spot(stockZhASpot)
+                    data_list.append(stockZhASpot)
+                    progress.update(task, advance=1)
+            save_stock_zh_a_spot(data_list)
     except Exception as e:
         # 异常处理，打印堆栈信息
         print("处理数据时发生异常：")
