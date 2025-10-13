@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from loguru import logger
 
 def task():
-    # input_realtime_data();
+    input_realtime_data();
     # input_history_data(code="600900", period="daily", start_date="20240101", end_date="20251001")
-    input_stock_info(code="600900")
+    # input_stock_info(code="600900")
 
 # 接口数据转换成字典数据--适用于列表数据
 def resdata_to_dis(res):
@@ -48,6 +48,7 @@ def generate_date_strings(start_date, end_date):
 def input_realtime_data():
     logger.info(f"获取A股实时行情数据--Start")
     stock_zh_a_spot_em_df = ak.stock_zh_a_spot_em()
+    logger.info(f"获取数据：{stock_zh_a_spot_em_df}")
     logger.info(f"获取A股实时行情数据--END")
     obj_class.mergin_list_data(resdata_to_dis(stock_zh_a_spot_em_df), StockData)
     logger.info("实时数据获取完毕")

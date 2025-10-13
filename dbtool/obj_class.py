@@ -42,7 +42,7 @@ def mergin_one_data(data, table_class):
     try:
         session = Session()
         # 遍历数据列表，检查每条记录是否已存在
-        data = ObjectOrResult.obj_to_res(data, table_class)
+        data = ObjectOrResult.obj_to_res(data, table_class())
         session.merge(data)
         session.commit()
     finally:

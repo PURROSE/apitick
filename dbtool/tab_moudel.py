@@ -37,9 +37,9 @@ class StockData(Base):
     __tablename__ = 'tab_stock_data'
 
     # 股票代码
-    code = Column(String(20),primary_key=True, nullable=False, comment='股票代码')
+    code = Column(String(20),primary_key=True, nullable=False, comment='代码')
     # 股票名称
-    name = Column(String(500), nullable=False, comment='股票名称')
+    name = Column(String(500), nullable=False, comment='名称')
     # 最新价
     latest_price = Column(Numeric(15, 4), nullable=False, comment='最新价')
     # 涨跌幅
@@ -123,4 +123,4 @@ class StockInfo(Base):
     # 行业
     industry = Column(String(100), nullable=False, comment='行业')
     # 上市时间
-    listing_date = Column(Date, nullable=False, comment='上市时间')
+    listing_date = Column(String(20), nullable=False, comment='上市时间')
