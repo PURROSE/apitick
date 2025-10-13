@@ -5,12 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python 调试程序",
-            "type": "debugpy",
+            "name": "run",
+            "type": "f5anything",
             "request": "launch",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "args": ""
+            "command": "py main.py",
         }
     ]
 }
