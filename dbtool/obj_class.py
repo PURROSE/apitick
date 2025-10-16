@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from loguru import logger
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from rich.progress import Progress
 from dbtool.tab_moudel import Base, ObjectOrResult
@@ -45,5 +45,57 @@ def mergin_one_data(data, table_class):
         data = ObjectOrResult.obj_to_res(data, table_class())
         session.merge(data)
         session.commit()
+    finally:
+        session.close()
+
+# 通用查询函数
+def query_all_stock_codes(table_class, *, filter_by=None, filters=None, order_by=None, limit=None):
+    """
+    通用查询
+    - table_class: 模型类
+    - filter_by: dict，等值过滤（等同于 SQLAlchemy 的 filter_by）
+    - filters: list/tuple，SQLAlchemy 表达式列表，例如 [Model.code=='000001', Model.name.like('%测%')]
+    - order_by: SQLAlchemy order_by 表达式，例如 Model.code.desc()
+    - limit: int
+    返回 ObjectOrResult.res_to_obj() 转换后的列表
+    """
+    try:
+        session = Session()
+        q = session.query(table_class)
+        if filter_by:
+            q = q.filter_by(**filter_by)
+        if filters:
+            q = q.filter(*filters)
+        if order_by:
+            q = q.order_by(order_by)
+        if limit:
+            q = q.limit(limit)
+        results = q.all()
+        return results
+    finally:
+        session.close()
+
+def get_subQuery(table_class, *, filter_by=None, filters=None, order_by=None, limit=None):
+    """
+    获取子查询对象
+    - table_class: 模型类
+    - filter_by: dict，等值过滤（等同于 SQLAlchemy 的 filter_by）
+    - filters: list/tuple，SQLAlchemy 表达式列表，例如 [Model.code=='000001', Model.name.like('%测%')]
+    - order_by: SQLAlchemy order_by 表达式，例如 Model.code.desc()
+    - limit: int
+    返回 SQLAlchemy 子查询对象
+    """
+    try:
+        session = Session()
+        q = session.query(table_class)
+        if filter_by:
+            q = q.filter_by(**filter_by)
+        if filters:
+            q = q.filter(*filters)
+        if order_by:
+            q = q.order_by(order_by)
+        if limit:
+            q = q.limit(limit)
+        return q.subquery()
     finally:
         session.close()
